@@ -27,11 +27,11 @@ def main(ctx, dry_run, verbose):
 
 @main.command(help="packer builder instances")
 @click.option("--older-than", type=Duration(), required=True, help="period since launched")
-@click.option("--tag", type=TagParam(), required=False, multiple=True, help="Tags to filter instances by. Specify with Name=Value format. Can specify --tag multiple times.")
+@click.option("--tag", 'tags', type=TagParam(), required=False, multiple=True, help="Tags to filter instances by. Specify with Name=Value format. Can specify --tag multiple times.")
 @click.pass_context
-def stop(ctx, older_than):
+def stop(ctx, older_than, tags):
     stop_expired_instances(
-        boto3.client("ec2"), dry_run=ctx.obj["dry_run"], older_than=timedelta(seconds=older_than.seconds)
+        boto3.client("ec2"), dry_run=ctx.obj["dry_run"], older_than=timedelta(seconds=older_than.seconds), tags=tags
     )
 
 

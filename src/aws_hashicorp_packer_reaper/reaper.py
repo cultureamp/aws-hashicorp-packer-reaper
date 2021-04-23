@@ -2,9 +2,7 @@ import os
 from datetime import timedelta
 from typing import List
 
-import boto3
 import humanize
-import durations
 
 from aws_hashicorp_packer_reaper.aws import EC2Instance, Tag
 from aws_hashicorp_packer_reaper.logger import log
@@ -68,22 +66,3 @@ def terminate_expired_instances(ec2: object, dry_run: bool, older_than: timedelt
         if not dry_run:
             ec2.terminate_instances(InstanceIds=[instance.instance_id])
     log.info(f"total of {len(instances)} instances terminated")
-
-
-operation = {"stop": stop_expired_instances, "terminate": terminate_expired_instances}
-
-
-def handler(request, _):
-    log.setLevel(os.getenv("LOG_LEVEL", "INFO"))
-    dry_run = request.get("dry_run", False)
-    older_than = durations.Duration(request.get("older_than", "2h"))
-    mode = request.get("mode", "stop")
-
-    operation[mode](
-        ec2=boto3.client("ec2"),
-        dry_run=dry_run,
-        older_than=timedelta(seconds=older_than.seconds),
-    )
-
-if __name__ == '__main__':
-    handler({"mode":"stop", "older_than": "1m", "dry_run": "true"}, {})
